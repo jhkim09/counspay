@@ -88,6 +88,8 @@ app.post("/api/capture-order", async (req, res) => {
         description: "경영컨설팅 보고서 1건",
         user: {
           name: userInfo.name,
+          company: userInfo.company,
+          ceo: userInfo.ceo,
           email: userInfo.email,
           phone: userInfo.phone,
           google_uid: userInfo.uid,

@@ -26,6 +26,8 @@ const completeSection = document.getElementById("complete-section");
 const userInfo = document.getElementById("user-info");
 const userAvatar = document.getElementById("user-avatar");
 const userName = document.getElementById("user-name");
+const inputCompany = document.getElementById("input-company");
+const inputCeo = document.getElementById("input-ceo");
 const inputEmail = document.getElementById("input-email");
 const inputPhone = document.getElementById("input-phone");
 const paymentError = document.getElementById("payment-error");
@@ -76,7 +78,8 @@ function showCompleteScreen(data) {
 
   document.getElementById("receipt-info").innerHTML = `
     <strong>주문번호:</strong> ${data.order_id}<br>
-    <strong>이름:</strong> ${data.user.name}<br>
+    <strong>회사명:</strong> ${data.user.company}<br>
+    <strong>대표자:</strong> ${data.user.ceo}<br>
     <strong>이메일:</strong> ${data.user.email}<br>
     <strong>연락처:</strong> ${data.user.phone}<br>
     <strong>결제금액:</strong> $${data.amount}<br>
@@ -102,9 +105,19 @@ function handleLogout() {
 // 유효성 검사
 // ============================================
 function validateForm() {
+  const company = inputCompany.value.trim();
+  const ceo = inputCeo.value.trim();
   const email = inputEmail.value.trim();
   const phone = inputPhone.value.trim();
 
+  if (!company) {
+    showError("회사명을 입력해주세요.");
+    return false;
+  }
+  if (!ceo) {
+    showError("대표자명을 입력해주세요.");
+    return false;
+  }
   if (!email) {
     showError("이메일을 입력해주세요.");
     return false;
@@ -167,6 +180,8 @@ function renderPayPalButton() {
     async onApprove(data) {
       const userPayload = {
         name: currentUser.displayName || "이름없음",
+        company: inputCompany.value.trim(),
+        ceo: inputCeo.value.trim(),
         email: inputEmail.value.trim(),
         phone: inputPhone.value.trim(),
         uid: currentUser.uid,
@@ -197,6 +212,8 @@ function renderPayPalButton() {
 // 추가 신청
 // ============================================
 function resetToPayment() {
+  inputCompany.value = "";
+  inputCeo.value = "";
   inputPhone.value = "";
   showPaymentScreen(currentUser);
 }
