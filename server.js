@@ -134,6 +134,49 @@ app.post("/api/capture-order", async (req, res) => {
   }
 });
 
+// 국내결제 신청 알림 (mmtum.shop 이동 전 고객 정보 수신)
+app.post("/api/kr-payment-notify", async (req, res) => {
+  try {
+    const { company, ceo, email, phone, user, uid, timestamp } = req.body;
+
+    const notifyData = {
+      event: "kr_payment_request",
+      timestamp: timestamp || new Date().toISOString(),
+      amount: "7500",
+      currency: "KRW",
+      description: "경영컨설팅 보고서 1건 (국내결제)",
+      user: { name: user, company, ceo, email, phone, google_uid: uid },
+    };
+
+    console.log("\n=== 국내결제 신청 ===");
+    console.log(JSON.stringify(notifyData, null, 2));
+    console.log("=====================\n");
+
+    // Make.com 웹훅 전송
+    if (process.env.WEBHOOK_URL && process.env.WEBHOOK_URL !== "https://your-webhook-url.com/callback") {
+      fetch(process.env.WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(notifyData),
+      }).catch((err) => console.error("Webhook 전송 실패:", err));
+    }
+
+    // 로컬 파일 저장
+    const fs = require("fs");
+    const logDir = path.join(__dirname, "payments");
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
+    fs.writeFileSync(
+      path.join(logDir, `kr_${Date.now()}.json`),
+      JSON.stringify(notifyData, null, 2)
+    );
+
+    res.json({ status: "OK" });
+  } catch (err) {
+    console.error("국내결제 알림 실패:", err);
+    res.status(500).json({ error: "알림 처리 실패" });
+  }
+});
+
 // 결제 내역 조회
 app.get("/api/payments", (req, res) => {
   const fs = require("fs");
